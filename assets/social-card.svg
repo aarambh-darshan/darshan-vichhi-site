@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Dark editorial site artwork">
+  <rect width="1200" height="630" fill="#1b1b1a"/>
+  <rect x="96" y="92" width="1008" height="446" rx="8" fill="#222220" stroke="#343431" stroke-width="2"/>
+  <path d="M176 206h536M176 286h848M176 366h648M176 446h392" fill="none" stroke="#343431" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="998" cy="204" r="28" fill="#aebcf4"/>
+</svg>

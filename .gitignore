@@ -1,0 +1,19 @@
+# Rust build output
+/target/
+
+# Generated site output
+/dist/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
