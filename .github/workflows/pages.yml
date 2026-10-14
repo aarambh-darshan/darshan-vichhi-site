@@ -25,6 +25,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy,rustfmt
+          targets: wasm32-unknown-unknown
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
@@ -41,6 +42,27 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --locked --all-targets -- -D warnings
 
+      # The intro video (src/video) is this same crate compiled to WebAssembly. wasm-bindgen's CLI
+      # must match the library version locked in Cargo.lock, so the version is read from there.
+      - name: Install wasm-bindgen CLI (version from Cargo.lock)
+        run: |
+          V="$(scripts/build-video.sh --wasm-bindgen-version)"
+          curl -fsSL "https://github.com/rustwasm/wasm-bindgen/releases/download/${V}/wasm-bindgen-${V}-x86_64-unknown-linux-musl.tar.gz" | tar -xz
+          sudo install "wasm-bindgen-${V}-x86_64-unknown-linux-musl/wasm-bindgen" /usr/local/bin/wasm-bindgen
+          wasm-bindgen --version
+          sudo apt-get update -qq && sudo apt-get install -y -qq binaryen
+
+      - name: Build intro video (Rust to WebAssembly)
+        run: scripts/build-video.sh
+
+      - name: Check intro video bundle
+        run: |
+          test -f assets/video/intro_video.js
+          test -f assets/video/intro_video_bg.wasm
+          test -f assets/video/intro.mp3
+          test -f assets/video/loader.js
+          test "$(stat -c%s assets/video/intro_video_bg.wasm)" -lt 1000000
+
       - name: Build static site
         run: cargo run --locked --release --bin build_site
 
@@ -48,6 +70,8 @@ jobs:
         run: |
           test -f dist/index.html
           test -f dist/.nojekyll
+          test -f dist/assets/video/intro_video_bg.wasm
+          test -f dist/assets/video/loader.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

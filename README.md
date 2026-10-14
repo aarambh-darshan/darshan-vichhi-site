@@ -5,9 +5,35 @@ AI Engineer and founder of AarambhDevHub. A native Rust binary reads the content
 and uses Leptos server-side rendering to produce a plain static GitHub Pages
 artifact.
 
-The deployed site contains HTML, CSS, SVG, XML, and text files only. It ships no
-JavaScript, WebAssembly, hydration code, client-side state, server, database, or
-Node.js toolchain.
+The page itself is plain HTML, CSS, SVG, XML, and text: no hydration code,
+client-side state, server, database, or Node.js toolchain. The one exception is
+the optional **intro video** (see below): a corner play button whose 20-line
+loader script does nothing until the visitor asks for it.
+
+## Intro video
+
+A "Watch the intro" button sits in the bottom-right corner. Pressing it makes
+the button press, spring, and grow into a full-screen, interactive,
+audio-driven video drawn live on a canvas: typography, a Scenix 3D wireframe,
+and all motion from Animato. It is part of this crate: the code is in
+`src/video/`, and the same crate built for `wasm32` is the video (the site
+generator is left out of that build).
+
+- Nothing downloads until the visitor hovers, focuses, or presses the button.
+- The narration is loaded whole and played from memory, so seeking works on any
+  server, including ones without range-request support.
+- The picture is a pure function of the narration's clock, so pause, scrub,
+  replay, and keyboard control (`Space`, arrows, `M`, `C`, `1`-`6`, `Esc`) are exact.
+- Words are timed from `src/video/data/words.json`, built by
+  `scripts/build_words.py` from `src/video/data/script.md` and the ElevenLabs
+  word timings. `cargo test` fails if a spoken cue goes missing.
+- CI (`.github/workflows/pages.yml`) builds the WebAssembly module with
+  `scripts/build-video.sh` before building and deploying the site. The built
+  files in `assets/video/` are committed too, so a plain `cargo run --bin
+  build_site` also works locally; rebuild them with `scripts/build-video.sh`
+  (needs the `wasm32-unknown-unknown` target and a matching `wasm-bindgen`
+  CLI; the script prints the install command).
+- Without JavaScript or WebAssembly the button simply stays hidden.
 
 ## Technology
 

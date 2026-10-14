@@ -380,3 +380,145 @@ h3 {
     outline: 3px solid CanvasText;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Intro video: the play button (bottom-right corner). The video itself is drawn
+   on a canvas by assets/video (Rust + WebAssembly) and is created only on click.
+   --------------------------------------------------------------------------- */
+.intro-play {
+  position: fixed;
+  right: max(1.1rem, env(safe-area-inset-right));
+  bottom: max(1.1rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 1.15rem 0.5rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+  transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.intro-play[hidden] {
+  display: none;
+}
+
+.intro-play:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.intro-play:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.intro-play__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+}
+
+.intro-play__icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: currentColor;
+  margin-left: 0.12rem;
+}
+
+.intro-play__icon::after {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  content: "";
+  animation: intro-ping 3s ease-out infinite;
+}
+
+@keyframes intro-ping {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+.intro-play__label small {
+  margin-left: 0.5rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.intro-play.is-loading .intro-play__icon {
+  animation: intro-breathe 1s ease-in-out infinite;
+}
+
+/* the button springs back (big, small, big) after the video closes into it */
+.intro-play.is-returning {
+  animation: intro-return 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes intro-breathe {
+  50% {
+    transform: scale(0.86);
+  }
+}
+
+@keyframes intro-return {
+  0% {
+    transform: scale(0.7);
+  }
+
+  40% {
+    transform: scale(1.14);
+  }
+
+  70% {
+    transform: scale(0.94);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+body.intro-open {
+  overflow: hidden;
+}
+
+@media (max-width: 520px) {
+  .intro-play__label small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-play {
+    transition: none;
+  }
+
+  .intro-play__icon::after,
+  .intro-play.is-loading .intro-play__icon,
+  .intro-play.is-returning {
+    animation: none;
+  }
+}
