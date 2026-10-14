@@ -34,7 +34,8 @@ impl Wire {
             remap[i] = id;
         }
         let mut edge_faces: BTreeMap<(u32, u32), Vec<Vec3>> = BTreeMap::new();
-        for tri in g.indices.chunks_exact(3) {
+
+        for tri in g.indices.as_chunks::<3>().0 {
             let ids = [
                 remap[tri[0] as usize],
                 remap[tri[1] as usize],
