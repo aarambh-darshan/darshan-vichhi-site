@@ -140,6 +140,14 @@ pub fn render_document(content: &SiteContent, year: i32) -> String {
                         </nav>
                     </footer>
                 </div>
+
+                <button class="intro-play" id="intro-play" type="button" hidden=true aria-label="Watch the intro video, 2 minutes 51 seconds">
+                    <span class="intro-play__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+                    </span>
+                    <span class="intro-play__label">"Watch the intro" <small>"2:51"</small></span>
+                </button>
+                <script type="module" src="assets/video/loader.js"></script>
             </body>
         </html>
     };
@@ -244,9 +252,13 @@ mod tests {
         let html = render_document(&content, 2026);
         assert!(html.contains("Darshan Vichhi"));
         assert!(html.contains("Aarambh AI"));
+        // The page is static HTML. The only script is the tiny lazy loader of the intro video
+        // (assets/video/loader.js); the WebAssembly module is fetched only when the visitor presses play.
         assert!(!html.contains("<script src="));
         assert!(!html.contains(".wasm"));
-        assert!(!html.contains("type=\"module\""));
+        assert_eq!(html.matches("type=\"module\"").count(), 1);
+        assert!(html.contains("assets/video/loader.js"));
+        assert!(html.contains("id=\"intro-play\""));
         assert!(!html.contains("<!>"));
     }
 }

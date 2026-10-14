@@ -5,14 +5,43 @@ edition = "2024"
 license = "MIT"
 publish = false
 
+[lib]
+# rlib: the static-site generator and tests. cdylib: the same crate built for
+# wasm32 is the intro video (src/video), loaded by assets/video/loader.js.
+crate-type = ["rlib", "cdylib"]
+
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Intro video (src/video): motion from Animato, 3D from Scenix, drawn on a canvas.
+animato = { version = "1.7.2", default-features = false, features = ["std", "tween", "spring"] }
+scenix = { version = "1.5.0", default-features = false, features = ["std", "scene", "camera", "mesh"] }
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+  "Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "CanvasRenderingContext2d",
+  "CanvasGradient", "TextMetrics", "HtmlAudioElement", "HtmlMediaElement", "CssStyleDeclaration",
+  "DomRect", "Performance", "EventTarget", "Event", "MouseEvent", "PointerEvent", "KeyboardEvent",
+  "Location", "Node", "NodeList", "DomTokenList", "Navigator", "MediaQueryList", "WheelEvent",
+  "FocusEvent", "AddEventListenerOptions", "console", "ScrollIntoViewOptions", "ScrollBehavior", "Storage",
+] }
+
+# The static-site generator is native only; it is not compiled into the WebAssembly module.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 leptos = { version = "=0.8.20", features = ["ssr"] }
 gray_matter = { version = "0.3.2", default-features = false, features = ["yaml"] }
 pulldown-cmark = "0.13.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 url = "2.5"
 
 [profile.release]
 strip = true
 lto = "thin"
+
+# The intro video: small and fast to download. Used by scripts/build-video.sh.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
