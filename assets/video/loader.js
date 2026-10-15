@@ -1,5 +1,5 @@
 // Loads the intro video only when the visitor asks for it. Nothing here runs at page load except
-// showing the play button. The WebAssembly module (~0.3 MB) and the narration (2.7 MB) start
+// showing the play button. The WebAssembly module (~0.3 MB) and the narration (~0.24 MB) start
 // downloading when the visitor hovers, focuses or touches the button.
 const button = document.getElementById('intro-play');
 const supported = button && 'WebAssembly' in window && !!document.createElement('canvas').getContext;
@@ -9,6 +9,15 @@ if (supported) {
   const base = new URL('assets/video/', document.baseURI);
   // A tiny silent clip: playing it inside the click "unlocks" the audio element on Safari / iOS.
   const SILENT = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
+  // The narration comes in two encodings of the same recording: Opus (~0.24 MB) for every modern
+  // browser, and a small MP3 (~0.67 MB) for the few that cannot play Opus.
+  const probe = document.createElement('audio');
+  const SOURCES = [
+    ['intro.opus', 'audio/ogg; codecs=opus'],
+    ['intro.mp3', 'audio/mpeg'],
+  ];
+  const [audioFile, audioType] = SOURCES.find(([, type]) => probe.canPlayType(type)) ?? SOURCES[1];
 
   let moduleLoading = null;
   let audioLoading = null;
@@ -21,13 +30,14 @@ if (supported) {
 
   // The narration is fetched whole and played from memory (a blob URL). That makes seeking work on
   // every server: a plain static server without range-request support cannot seek a streamed file.
+  // The blob gets an explicit type so the browser never has to guess the codec.
   const loadAudio = () =>
-    (audioLoading ??= fetch(new URL('intro.mp3', base))
+    (audioLoading ??= fetch(new URL(audioFile, base))
       .then((response) => {
         if (!response.ok) throw new Error(`narration: HTTP ${response.status}`);
-        return response.blob();
+        return response.arrayBuffer();
       })
-      .then((blob) => URL.createObjectURL(blob)));
+      .then((bytes) => URL.createObjectURL(new Blob([bytes], { type: audioType }))));
 
   const warm = () => {
     loadModule().catch(() => {});
@@ -49,7 +59,7 @@ if (supported) {
     const unlocked = audio.play().catch(() => {});
 
     try {
-      const [mod, url] = await Promise.all([loadModule(), loadAudio().catch(() => new URL('intro.mp3', base).href)]);
+      const [mod, url] = await Promise.all([loadModule(), loadAudio().catch(() => new URL(audioFile, base).href)]);
       await unlocked;
       audio.pause();
       audio.src = url;

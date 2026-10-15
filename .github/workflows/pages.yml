@@ -59,6 +59,7 @@ jobs:
         run: |
           test -f assets/video/intro_video.js
           test -f assets/video/intro_video_bg.wasm
+          test -f assets/video/intro.opus
           test -f assets/video/intro.mp3
           test -f assets/video/loader.js
           test "$(stat -c%s assets/video/intro_video_bg.wasm)" -lt 1000000
