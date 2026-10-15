@@ -21,7 +21,9 @@ generator is left out of that build).
 
 - Nothing downloads until the visitor hovers, focuses, or presses the button.
 - The narration is loaded whole and played from memory, so seeking works on any
-  server, including ones without range-request support.
+  server, including ones without range-request support. It ships as Opus
+  (`intro.opus`, ~0.24 MB) with a small MP3 fallback (`intro.mp3`) for browsers
+  without Opus support.
 - The picture is a pure function of the narration's clock, so pause, scrub,
   replay, and keyboard control (`Space`, arrows, `M`, `C`, `1`-`6`, `Esc`) are exact.
 - Words are timed from `src/video/data/words.json`, built by
